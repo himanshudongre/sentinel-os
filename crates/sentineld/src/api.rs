@@ -21,6 +21,28 @@ pub async fn post_proof(
     State(st): State<AppState>,
     Json(proof): Json<ProofBundle>,
 ) -> impl IntoResponse {
+    // Enforce single canonical chain:
+    // - If empty DB: expected prev_log_hash is 64 zeros (sha256 hex length)
+    // - Else: expected prev_log_hash must match current head log_hash
+    let expected = match st.db.expected_prev_log_hash() {
+        Ok(v) => v,
+        Err(e) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("db head read failed: {e}"),
+            )
+                .into_response();
+        }
+    };
+
+    if proof.prev_log_hash != expected {
+        let msg = format!(
+            "prev_log_hash mismatch: expected {}, got {}",
+            expected, proof.prev_log_hash
+        );
+        return (StatusCode::CONFLICT, msg).into_response();
+    }
+
     match st.db.insert_proof(&proof) {
         Ok(_) => (StatusCode::CREATED, Json(proof.proof_id.to_string())).into_response(),
         Err(e) => {

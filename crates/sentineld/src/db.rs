@@ -23,14 +23,14 @@ impl Db {
         conn.execute_batch(
             "
             CREATE TABLE IF NOT EXISTS proofs (
-                seq          INTEGER PRIMARY KEY AUTOINCREMENT,
-                proof_id     TEXT NOT NULL UNIQUE,
-                ts           TEXT NOT NULL,
-                log_hash     TEXT NOT NULL UNIQUE,
+                seq           INTEGER PRIMARY KEY AUTOINCREMENT,
+                proof_id      TEXT NOT NULL UNIQUE,
+                ts            TEXT NOT NULL,
+                log_hash      TEXT NOT NULL UNIQUE,
                 prev_log_hash TEXT NOT NULL,
-                pubkey_id    TEXT NOT NULL,
-                bundle_json  TEXT NOT NULL,
-                inserted_at  TEXT NOT NULL
+                pubkey_id     TEXT NOT NULL,
+                bundle_json   TEXT NOT NULL,
+                inserted_at   TEXT NOT NULL
             );
 
             CREATE INDEX IF NOT EXISTS idx_proofs_seq ON proofs(seq);
@@ -98,5 +98,12 @@ impl Db {
             out.push(serde_json::from_str(&s).expect("valid proof json"));
         }
         Ok(out)
+    }
+
+    pub fn expected_prev_log_hash(&self) -> rusqlite::Result<String> {
+        match self.get_head()? {
+            Some(p) => Ok(p.log_hash),
+            None => Ok("00".repeat(32)),
+        }
     }
 }
