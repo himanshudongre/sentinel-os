@@ -46,7 +46,6 @@ pub struct ProofBuildInput<'a> {
     pub prev_log_hash: String,
     pub signing_key: &'a SigningKey,
     pub verifying_key: &'a VerifyingKey,
-    pub pubkey_id: String,
 }
 
 /// Build a ProofBundle that is verifiable offline.
@@ -93,7 +92,7 @@ pub fn build_proof_bundle(input: ProofBuildInput) -> Result<ProofBundle, String>
         log_hash,
         signing: SigningInfo {
             alg: "ed25519".to_string(),
-            pubkey_id: input.pubkey_id,
+            pubkey_id: crate::pubkey_id_from_vk(input.verifying_key),
             signature: sig_b64,
         },
     })

@@ -23,3 +23,7 @@ pub fn verify_bytes(
 ) -> Result<(), ed25519_dalek::SignatureError> {
     vk.verify(msg, sig)
 }
+
+pub fn pubkey_id_from_vk(vk: &ed25519_dalek::VerifyingKey) -> String {
+    sha256_hex(vk.to_bytes().as_slice())
+}
