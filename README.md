@@ -1,20 +1,78 @@
+
+---
+
+# 📄 Updated `README.md`
+
+```markdown
 # Sentinel OS
 
-Local-first trust control plane for agentic systems.
+Local-first trust control plane for agent systems.
 
-## What it does (v0.1)
-- Intercepts MCP tool invocations through a proxy
-- Evaluates policy (deny by default)
-- Requires approvals when configured
-- Emits cryptographically verifiable proof bundles
-- Stores proofs in an append-only, tamper-evident log
+Sentinel OS ensures every agent action is:
 
-## Repository layout
-- `crates/sentinel-core`: schemas, canonicalization, hashing, signing, verification
-- `crates/sentineld`: local daemon API, policy evaluation, proof log
-- `crates/sentinelctl`: CLI to approve, inspect, verify
-- `crates/mcp-proxy`: MCP firewall proxy integration
-- `docs/`: spec, threat model, invariants, roadmap
+- Canonicalized
+- Cryptographically signed
+- Hash-chained
+- Offline verifiable
+- Bound to a server identity
 
-## Quick start
-See `docs/spec-v0.1.md` and `docs/ROADMAP.md`.
+This is not just logging.
+This is enforceable trust infrastructure.
+
+---
+
+## Why Sentinel Exists
+
+Modern AI agents can:
+
+- Call tools
+- Modify files
+- Access networks
+- Execute shell commands
+- Spend money
+- Exfiltrate data
+
+Most systems log after the fact.
+
+Sentinel logs before execution and enforces policy (coming in v0.2).
+
+---
+
+## Core Properties
+
+- Server-authoritative signing
+- Ed25519 cryptographic proofs
+- RFC8785 canonical JSON
+- Append-only hash chain
+- Database identity lock
+- Offline chain verification
+- Strict CI enforcement
+
+---
+
+## Architecture
+
+Agent → Seatbelt (policy) → Sentinel → Ledger
+
+- Seatbelt decides.
+- Sentinel signs.
+- Ledger proves.
+- Clients verify.
+
+---
+
+## Version Status
+
+v0.1 — Centralized Authoritative Ledger  
+v0.2 — Policy Enforcement (Seatbelt)  
+v0.3 — MCP Proxy Integration  
+v0.4 — Agent Adapters  
+v1.0 — Production Hardened Trust Plane
+
+---
+
+## Quickstart
+
+```bash
+cargo run -p sentineld
+cargo run -p sentinelctl

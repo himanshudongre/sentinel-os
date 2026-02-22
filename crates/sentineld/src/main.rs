@@ -32,6 +32,11 @@ async fn main() {
     let verifying_key = signing_key.verifying_key();
     let server_pubkey_id = sentinel_core::sha256_hex(verifying_key.to_bytes().as_slice());
 
+    let policy_path =
+        std::env::var("SENTINEL_POLICY").unwrap_or_else(|_| "policy/policy.json".to_string());
+
+    let policy = seatbelt_core::policy::Policy::load(&policy_path).expect("failed to load policy");
+
     // DB identity lock: one DB must correspond to one server pubkey_id
     let existing = db.get_meta("server_pubkey_id").expect("read meta");
 
@@ -70,6 +75,7 @@ async fn main() {
         db,
         signing_key,
         verifying_key,
+        policy,
     };
 
     let app = Router::new()

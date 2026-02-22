@@ -1,5 +1,7 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use base64::{engine::general_purpose::STANDARD as B64, Engine as _};
+use seatbelt_core::policy::Policy;
+use sentinel_core::{Decision, PolicyRef};
 
 use crate::db::Db;
 
@@ -13,7 +15,6 @@ pub struct CurrentKeyResponse {
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct TransitionRequest {
     pub intent: sentinel_core::TransitionIntent,
-    pub decision: sentinel_core::Decision,
     pub execution: sentinel_core::ExecutionInfo,
 }
 
@@ -22,6 +23,7 @@ pub struct AppState {
     pub db: Db,
     pub signing_key: ed25519_dalek::SigningKey,
     pub verifying_key: ed25519_dalek::VerifyingKey,
+    pub policy: Policy,
 }
 
 pub async fn health() -> &'static str {
@@ -44,21 +46,26 @@ pub async fn post_transition(
         }
     };
 
-    // Basic sanity: decision must refer to intent id
-    if req.decision.intent_id != req.intent.id {
-        return (
-            StatusCode::BAD_REQUEST,
-            "decision.intent_id must match intent.id".to_string(),
-        )
-            .into_response();
-    }
+    let eval = st.policy.evaluate(&req.intent);
+
+    let server_decision = Decision {
+        intent_id: req.intent.id,
+        decision: eval.decision.clone(),
+        reason: eval.reason.clone(),
+        policy: PolicyRef {
+            policy_id: "local".to_string(),
+            policy_hash: eval.policy_hash.clone(),
+            policy_version: st.policy.version.clone(),
+        },
+        constraints: None,
+    };
 
     // Build proof on server, sign with server key
     let proof = match sentinel_core::build_proof_bundle(sentinel_core::ProofBuildInput {
         proof_id: uuid::Uuid::new_v4(),
         ts: req.intent.ts.clone(),
         intent: &req.intent,
-        decision: &req.decision,
+        decision: &server_decision,
         execution: req.execution,
         prev_log_hash: prev,
         signing_key: &st.signing_key,

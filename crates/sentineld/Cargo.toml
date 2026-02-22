@@ -6,6 +6,7 @@ license = "Apache-2.0"
 
 [dependencies]
 sentinel-core = { path = "../sentinel-core" }
+seatbelt-core = { path = "../seatbelt-core" }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal"] }
 axum = "0.7"

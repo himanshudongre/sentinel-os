@@ -36,7 +36,7 @@ fn main() {
             host_fingerprint: "dev".to_string(),
         },
         transition_type: "action".to_string(),
-        capability: "demo".to_string(),
+        capability: "dangerous".to_string(),
         target: Target {
             mcp_server: "none".to_string(),
             tool_name: "none".to_string(),

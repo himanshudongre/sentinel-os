@@ -1,10 +1,11 @@
 [workspace]
 resolver = "2"
+
 members = [
   "crates/sentinel-core",
   "crates/sentineld",
   "crates/sentinelctl",
-  "crates/mcp-proxy"
+  "crates/seatbelt-core",
 ]
 
 [workspace.package]
