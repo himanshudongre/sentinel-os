@@ -1,6 +1,6 @@
+use ed25519_dalek::VerifyingKey;
 use reqwest::blocking::Client;
 use sentinel_core::*;
-use ed25519_dalek::VerifyingKey;
 use uuid::Uuid;
 
 fn main() {
