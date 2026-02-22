@@ -3,7 +3,19 @@
     "default": "deny",
     "allow": [
         {
-            "capability": "demo"
+            "capability": "list_allowed_directories"
+        },
+        {
+            "capability": "list_directory"
+        },
+        {
+            "capability": "search_files"
+        },
+        {
+            "capability": "read_text_file"
+        },
+        {
+            "capability": "read_file"
         }
     ]
 }

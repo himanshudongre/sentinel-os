@@ -6,6 +6,7 @@ members = [
   "crates/sentineld",
   "crates/sentinelctl",
   "crates/seatbelt-core",
+  "crates/mcp-proxy", "crates/mcp-upstream-echo",
 ]
 
 [workspace.package]
