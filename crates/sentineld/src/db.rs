@@ -22,21 +22,26 @@ impl Db {
         let conn = self.conn()?;
         conn.execute_batch(
             "
-            CREATE TABLE IF NOT EXISTS proofs (
-                seq           INTEGER PRIMARY KEY AUTOINCREMENT,
-                proof_id      TEXT NOT NULL UNIQUE,
-                ts            TEXT NOT NULL,
-                log_hash      TEXT NOT NULL UNIQUE,
-                prev_log_hash TEXT NOT NULL,
-                pubkey_id     TEXT NOT NULL,
-                bundle_json   TEXT NOT NULL,
-                inserted_at   TEXT NOT NULL
-            );
+        CREATE TABLE IF NOT EXISTS proofs (
+            seq           INTEGER PRIMARY KEY AUTOINCREMENT,
+            proof_id      TEXT NOT NULL UNIQUE,
+            ts            TEXT NOT NULL,
+            log_hash      TEXT NOT NULL UNIQUE,
+            prev_log_hash TEXT NOT NULL,
+            pubkey_id     TEXT NOT NULL,
+            bundle_json   TEXT NOT NULL,
+            inserted_at   TEXT NOT NULL
+        );
 
-            CREATE INDEX IF NOT EXISTS idx_proofs_seq ON proofs(seq);
-            CREATE INDEX IF NOT EXISTS idx_proofs_prev ON proofs(prev_log_hash);
-            CREATE INDEX IF NOT EXISTS idx_proofs_pubkey ON proofs(pubkey_id);
-            ",
+        CREATE INDEX IF NOT EXISTS idx_proofs_seq ON proofs(seq);
+        CREATE INDEX IF NOT EXISTS idx_proofs_prev ON proofs(prev_log_hash);
+        CREATE INDEX IF NOT EXISTS idx_proofs_pubkey ON proofs(pubkey_id);
+
+        CREATE TABLE IF NOT EXISTS meta (
+            key   TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+        ",
         )?;
         Ok(())
     }
@@ -65,17 +70,6 @@ impl Db {
         Ok(())
     }
 
-    pub fn get_proof_by_id(&self, proof_id: &str) -> rusqlite::Result<Option<ProofBundle>> {
-        let conn = self.conn()?;
-        conn.query_row(
-            "SELECT bundle_json FROM proofs WHERE proof_id = ?1",
-            params![proof_id],
-            |row| row.get::<_, String>(0),
-        )
-        .optional()
-        .map(|opt| opt.map(|s| serde_json::from_str(&s).expect("valid proof json")))
-    }
-
     pub fn get_head(&self) -> rusqlite::Result<Option<ProofBundle>> {
         let conn = self.conn()?;
         conn.query_row(
@@ -98,6 +92,26 @@ impl Db {
             out.push(serde_json::from_str(&s).expect("valid proof json"));
         }
         Ok(out)
+    }
+
+    pub fn get_meta(&self, key: &str) -> rusqlite::Result<Option<String>> {
+        let conn = self.conn()?;
+        conn.query_row(
+            "SELECT value FROM meta WHERE key = ?1",
+            params![key],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()
+    }
+
+    pub fn set_meta(&self, key: &str, value: &str) -> rusqlite::Result<()> {
+        let conn = self.conn()?;
+        conn.execute(
+            "INSERT INTO meta(key, value) VALUES(?1, ?2)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            params![key, value],
+        )?;
+        Ok(())
     }
 
     pub fn expected_prev_log_hash(&self) -> rusqlite::Result<String> {
