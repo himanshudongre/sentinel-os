@@ -5,4 +5,20 @@ edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
+tokio = { version = "1.49.0", features = [
+    "rt-multi-thread",
+    "macros",
+    "io-std",
+    "io-util",
+    "process",
+] }
+reqwest = { version = "0.12.28", features = ["json"] }
+base64 = "0.22"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10"
+hex = "0.4"
+uuid = { version = "1.21", features = ["v4"] }
+chrono = { version = "0.4", features = ["clock"] }
+
 sentinel-core = { path = "../sentinel-core" }
