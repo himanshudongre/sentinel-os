@@ -127,11 +127,109 @@ If the server key changes while the DB remains:
 
 ---
 
+## Current Version
+v0.2 — Seatbelt Policy Decisions (Centralized)
+
+---
+
+## Overview
+
+Sentinel OS is a local-first trust control plane for agent systems.
+
+It provides:
+
+- Canonicalization (RFC8785-JCS)
+- Cryptographic signing (Ed25519)
+- Append-only hash-chained ledger
+- Offline verification
+- Server identity lock (DB bound to server public key)
+- Policy decisions via Seatbelt (default deny)
+
+---
+
+## Architecture
+
+### Core Contract
+
+Intent → Policy Decision → Signed Proof → Append to Ledger → Offline Verification
+
+This contract is universal. Adapters (MCP proxy, HTTP gateway, shell wrapper) translate real actions into Intent.
+
+---
+
+## What Exists Today
+
+### sentinel-core
+- Canonicalize intent and decision
+- Hashing utilities
+- Sign ProofBundle
+- Verify signature and chain integrity
+
+### seatbelt-core (v0.2)
+- Loads local JSON policy
+- Evaluates TransitionIntent deterministically
+- Produces: decision, reason, policy_hash
+
+### sentineld
+- Authoritative server
+- Computes authoritative prev_log_hash
+- Evaluates Seatbelt policy (server-side)
+- Builds and signs ProofBundle
+- Appends to SQLite ledger
+- Exposes endpoints:
+  - POST /v1/transitions
+  - GET /v1/keys/current
+  - GET /v1/chain
+  - GET /v1/chain/head
+
+### sentinelctl
+- Sends transitions
+- Fetches key and chain
+- Verifies chain offline
+
+---
+
+## Security Invariants (v0.2)
+
+- Clients cannot provide authoritative decisions.
+- Server computes policy decision and signs it.
+- Ledger remains append-only and hash chained.
+- Database is bound to a single server public key.
+- Canonicalization version is fixed.
+
+---
+
+## Threat Model
+
+Assumptions:
+- Agent is untrusted.
+- Tools are untrusted.
+- Sentinel is local trust root.
+- Host OS integrity assumed.
+
+Out of scope:
+- Compromised OS
+- Distributed consensus / byzantine networks
+- Hardware key security
+
+---
+
+## What Is Missing
+
+- Tool interception and enforcement (blocking)
+- Multi-adapter integrations (MCP, HTTP, shell, filesystem)
+- Key rotation
+- Policy explainability (rule identifiers)
+- Human approval workflow
+- Production hardening (rate limits, auth)
+
+---
+
 ## Next Milestone
 
-v0.2 — Seatbelt Policy Engine
+v0.3 — MCP Proxy Adapter (first enforcement integration)
 
 Goal:
-Move from "log everything" to "enforce before execution".
+Intercept real tool calls, consult Sentinel, allow or deny, then log execution digest.
 
-Sentinel will become an active gate, not just a ledger.
+This will be the first end-to-end real agent integration tutorial in-repo.
