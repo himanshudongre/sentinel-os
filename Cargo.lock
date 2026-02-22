@@ -1427,9 +1427,12 @@ dependencies = [
 name = "sentinelctl"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "ed25519-dalek",
  "reqwest",
  "sentinel-core",
+ "serde",
+ "serde_json",
  "uuid",
 ]
 
@@ -1438,6 +1441,9 @@ name = "sentineld"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "base64",
+ "ed25519-dalek",
+ "rand_core 0.6.4",
  "rusqlite",
  "sentinel-core",
  "serde",

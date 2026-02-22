@@ -9,4 +9,5 @@
 *.swo
 .env
 sentinel.db
+sentinel.key
 target/
